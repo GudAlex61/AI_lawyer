@@ -5,4 +5,11 @@
     <string name="hi_message">Привет, я AI Lawyer.</string>
     <string name="error_network">Ошибка сети. Проверьте подключение.</string>
     <string name="error_api">Ошибка API. Попробуйте позже.</string>
+    <string name="birth_date_label">Дата рождения: %s</string>
+    <string name="not_entered">не введен</string>
+    <string name="error_load">Не удалось загрузить данные</string>
+    <string name="auto_fill_hint">*Эти данные будут автоматически подставляться в Ваши документы</string>
+    <string name="passport_label">Паспорт: %s</string>
+    <string name="avatar_description">Аватар пользователя</string>
+    <string name="action_settings">Настройки</string>
 </resources>
