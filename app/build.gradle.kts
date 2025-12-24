@@ -20,6 +20,9 @@ android {
 
         buildConfigField("String", "OPENROUTER_API_KEY", "\"${getOpenRouterApiKey(project)}\"")
     }
+    buildFeatures {
+        buildConfig = true
+    }
 
     buildTypes {
         release {
