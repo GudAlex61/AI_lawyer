@@ -17,6 +17,7 @@ class ProfileFragment : Fragment() {
     private var fullName: String = ""
     private var birthDate: String = ""
 
+    private lateinit var settingsButton: ImageButton
     private lateinit var avatar: ImageView
     private lateinit var progressBar: ProgressBar
     private lateinit var errorText: TextView
@@ -45,30 +46,16 @@ class ProfileFragment : Fragment() {
         passportText = view.findViewById(R.id.passportText)
         hintText = view.findViewById(R.id.hintText)
         toolbar = view.findViewById(R.id.toolbar)
+        settingsButton = view.findViewById(R.id.settingsButton)
 
         (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
-        toolbar.title = "Профиль"
+        (requireActivity() as AppCompatActivity).supportActionBar?.setDisplayShowTitleEnabled(false)
+
+        settingsButton.setOnClickListener {
+            true
+        }
 
         loadData()
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.profile_menu, menu)
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_settings -> {
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
     }
 
     private fun showLoading() {
@@ -82,7 +69,6 @@ class ProfileFragment : Fragment() {
     }
 
     private fun showContent() {
-        // 🔒 Защита от обращения к уничтоженному View
         if (isAdded && !isDetached && activity != null) {
             progressBar.visibility = View.GONE
             errorText.visibility = View.GONE
