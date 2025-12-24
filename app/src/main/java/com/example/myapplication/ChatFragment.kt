@@ -260,7 +260,7 @@ class ChatFragment : Fragment() {
                 }
 
                 // БЕЗОПАСНОЕ ИСПОЛЬЗОВАНИЕ API КЛЮЧА
-                val apiKey = BuildConfig.OPENROUTER_API_KEY
+                val apiKey = " "
 
                 if (apiKey.isEmpty() || apiKey.contains("ваш_ключ_тут")) {
                     withContext(Dispatchers.Main) {
