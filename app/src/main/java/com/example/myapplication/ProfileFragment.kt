@@ -103,8 +103,8 @@ class ProfileFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             delay(2000)
             withContext(IO) {
-                fullName = "Короленко Михаил Сергеевич"
-                birthDate = "04.08.1998"
+                fullName = getString(R.string.user_full_name_template)
+                birthDate = getString(R.string.user_birthday_template)
                 passportNumber = null
             }
             showContent()

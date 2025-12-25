@@ -33,12 +33,12 @@ class SettingsActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
 
         val settings = listOf(
-            Setting("Язык общения", "Русский"),
-            Setting("Тип консультаций", "Гражданское право"),
-            Setting("Уведомления", "Включены"),
-            Setting("Тема оформления", "Светлая"),
-            Setting("Аккаунт", "mikhail@example.com"),
-            Setting("О приложении", "Версия 1.2.0")
+            Setting(getString(R.string.setting_language), getString(R.string.language_russian)),
+            Setting(getString(R.string.setting_consultation_type), getString(R.string.consultation_civil_law)),
+            Setting(getString(R.string.setting_notifications), getString(R.string.notifications_enabled)),
+            Setting(getString(R.string.setting_theme), getString(R.string.theme_light)),
+            Setting(getString(R.string.setting_account), getString(R.string.email)),
+            Setting(getString(R.string.setting_about),getString(R.string.version) )
         )
 
         recyclerView.adapter = SettingsAdapter(settings)
