@@ -10,12 +10,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.view.WindowCompat
 
 class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+
+        // 1. Get the WindowInsetsController
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        // 2. Tell it that the appearance is light (so icons should be dark)
+        windowInsetsController.isAppearanceLightStatusBars = true
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
