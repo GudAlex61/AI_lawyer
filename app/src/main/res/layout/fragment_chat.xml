@@ -1,139 +1,193 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#FFFFFF"
     android:fitsSystemWindows="true">
 
-    <!-- Header -->
+    <!-- Меню истории чатов (появляется слева) -->
     <LinearLayout
-        android:id="@+id/header"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingHorizontal="24dp"
-        android:paddingVertical="16dp">
-
-        <TextView
-            android:id="@+id/menuButton"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:text="☰"
-            android:textSize="24sp"
-            android:gravity="center" />
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <TextView
-            android:id="@+id/newChatButton"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:text="+"
-            android:textSize="24sp"
-            android:gravity="center" />
-    </LinearLayout>
-
-    <!-- ПРИВЕТСТВЕННЫЙ ЭКРАН (виден только при пустом чате) -->
-    <LinearLayout
-        android:id="@+id/welcomeContainer"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:id="@+id/historyMenu"
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
         android:orientation="vertical"
-        android:gravity="center"
-        android:visibility="visible">
+        android:background="#FFFFFF"
+        android:visibility="gone"
+        android:elevation="16dp">
 
-        <TextView
-            android:id="@+id/welcomeTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Привет, я Al Lawyer."
-            android:textSize="24sp"
-            android:textColor="#000000"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
+        <!-- Заголовок меню -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:orientation="horizontal"
+            android:background="#F3F4F6"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp">
 
-        <TextView
-            android:id="@+id/welcomeSubtitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Чем могу помочь вам сегодня?"
-            android:textSize="18sp"
-            android:textColor="#666666" />
-    </LinearLayout>
-
-    <!-- КОНТЕЙНЕР ДЛЯ СООБЩЕНИЙ (изначально скрыт) -->
-    <FrameLayout
-        android:id="@+id/messagesContainer"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:visibility="gone" />
-
-    <!-- Контейнер для ввода сообщения -->
-    <LinearLayout
-        android:id="@+id/input_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="#F3F4F6"
-        android:padding="16dp"
-        android:gravity="center_vertical">
-
-        <!-- Кнопка добавления файла -->
-        <TextView
-            android:id="@+id/attachButton"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:text="+"
-            android:textSize="20sp"
-            android:textColor="#9CA3AF"
-            android:gravity="center" />
-
-        <!-- Поле ввода сообщения -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/inputLayout"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            android:layout_weight="1"
-            app:boxBackgroundMode="none"
-            app:hintTextColor="@android:color/transparent"
-            app:hintEnabled="false">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/messageInput"
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:hint="Написать сообщение..."
-                android:textSize="16sp"
-                android:textColor="#000000"
-                android:maxLines="5"
-                android:inputType="textMultiLine|textCapSentences"
-                android:background="@android:color/transparent"
-                android:padding="0dp"
-                android:gravity="top|start" />
+                android:layout_weight="1"
+                android:text="История чатов"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#000000" />
 
-        </com.google.android.material.textfield.TextInputLayout>
+            <TextView
+                android:id="@+id/closeMenuButton"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:text="✕"
+                android:textSize="20sp"
+                android:textColor="#666666"
+                android:gravity="center" />
+        </LinearLayout>
 
-        <!-- Кнопка отправки -->
-        <TextView
-            android:id="@+id/sendButton"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:background="@drawable/rounded_yellow_button"
-            android:text="↑"
-            android:textSize="20sp"
-            android:textColor="#FFFFFF"
-            android:gravity="center" />
+        <!-- Список чатов -->
+        <ListView
+            android:id="@+id/chatHistoryList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="8dp" />
     </LinearLayout>
-</LinearLayout>
+
+    <!-- Основной контент -->
+    <LinearLayout
+        android:id="@+id/main_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#FFFFFF">
+
+        <!-- Header -->
+        <LinearLayout
+            android:id="@+id/header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="16dp">
+
+            <TextView
+                android:id="@+id/menuButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:text="☰"
+                android:textSize="24sp"
+                android:gravity="center" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/newChatButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:text="+"
+                android:textSize="24sp"
+                android:gravity="center" />
+        </LinearLayout>
+
+        <!-- ПРИВЕТСТВЕННЫЙ ЭКРАН -->
+        <LinearLayout
+            android:id="@+id/welcomeContainer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="visible">
+
+            <TextView
+                android:id="@+id/welcomeTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Привет, я Al Lawyer."
+                android:textSize="24sp"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:id="@+id/welcomeSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Чем могу помочь вам сегодня?"
+                android:textSize="18sp"
+                android:textColor="#666666" />
+        </LinearLayout>
+
+        <!-- КОНТЕЙНЕР ДЛЯ СООБЩЕНИЙ -->
+        <FrameLayout
+            android:id="@+id/messagesContainer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="gone" />
+
+        <!-- Контейнер для ввода сообщения -->
+        <LinearLayout
+            android:id="@+id/input_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#F3F4F6"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/attachButton"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:text="+"
+                android:textSize="20sp"
+                android:textColor="#9CA3AF"
+                android:gravity="center" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/inputLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                app:boxBackgroundMode="none"
+                app:hintTextColor="@android:color/transparent"
+                app:hintEnabled="false">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/messageInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Написать сообщение..."
+                    android:textSize="16sp"
+                    android:textColor="#000000"
+                    android:maxLines="5"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:background="@android:color/transparent"
+                    android:padding="0dp"
+                    android:gravity="top|start" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/sendButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/rounded_yellow_button"
+                android:text="↑"
+                android:textSize="20sp"
+                android:textColor="#FFFFFF"
+                android:gravity="center" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
