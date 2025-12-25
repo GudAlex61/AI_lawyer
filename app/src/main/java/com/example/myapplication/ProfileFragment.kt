@@ -12,6 +12,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 
+// клик по аватарке - выбор фото из галереи и подставновка в профиль
 class ProfileFragment : Fragment() {
 
     private var passportNumber: String? = null

@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.WindowCompat
 
+// по лонгтапу на каждый элемент настроек - копировать в буфер обмена содержимое ячейки
 class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

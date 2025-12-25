@@ -22,6 +22,7 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
+// сохранение состояния при повороте
 class ChatFragment : Fragment() {
 
     data class Message(

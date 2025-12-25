@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
+// унести логику во вьюмодель, выделить state (StateFlow)
 class DocumentsFragment : Fragment(R.layout.fragment_documents) {
 
     private lateinit var recyclerView: RecyclerView
