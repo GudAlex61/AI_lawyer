@@ -8,7 +8,7 @@
     android:background="@color/gray_100"
     android:padding="16dp">
 
-    <!-- Верхняя панель -->
+    <!-- Верхняя панель (избранное + фильтр) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -16,6 +16,7 @@
         android:gravity="center_vertical"
         android:layout_marginTop="20dp">
 
+        <!-- Кнопка избранного (была) -->
         <ImageView
             android:id="@+id/btnFavorites"
             android:layout_width="32dp"
@@ -23,7 +24,7 @@
             android:src="@drawable/ic_star_outline"
             app:tint="@color/gray_500" />
 
-
+        <!-- Пустой заполнитель -->
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -31,14 +32,30 @@
             android:text=""
             />
 
-        <TextView
+        <!-- Кнопка фильтра/сортировки (вместо "+") -->
+        <ImageView
+            android:id="@+id/btnFilter"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:text="+"
-            android:textSize="24sp"
-            android:gravity="center"
-            android:textColor="@color/black" />
+            android:src="@android:drawable/ic_menu_sort_by_size"
+            android:padding="4dp"
+            app:tint="@color/gray_500"/>
     </LinearLayout>
+
+    <!-- Поле поиска -->
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="15dp"
+        android:background="@drawable/bg_search"
+        app:queryHint="Поиск по названию..."
+        app:iconifiedByDefault="false"
+        app:searchIcon="@android:drawable/ic_menu_search"
+        app:closeIcon="@android:drawable/ic_menu_close_clear_cancel"
+        app:queryBackground="@android:color/transparent"
+        app:submitBackground="@android:color/transparent"/>
 
     <!-- Список документов -->
     <androidx.recyclerview.widget.RecyclerView
