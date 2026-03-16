@@ -22,6 +22,7 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
+// сохранение состояния при повороте
 class ChatFragment : Fragment() {
 
     data class Message(
@@ -495,6 +496,7 @@ class ChatFragment : Fragment() {
                     put("messages", messagesArray)
                 }
 
+                // БЕЗОПАСНОЕ ИСПОЛЬЗОВАНИЕ API КЛЮЧА
                 val apiKey = BuildConfig.OPENROUTER_API_KEY
 
                 val request = Request.Builder()

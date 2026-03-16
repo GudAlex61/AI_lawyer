@@ -1,8 +1,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@android:color/white">
+    android:background="@android:color/white"
+    android:fitsSystemWindows="true">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -72,7 +74,8 @@
                 android:textStyle="bold"
                 android:textColor="@android:color/black"
                 android:gravity="center"
-                android:visibility="gone" />
+                android:visibility="gone"
+                tools:text="@string/user_full_name_template"/>
 
             <TextView
                 android:id="@+id/birthDateText"
@@ -82,7 +85,8 @@
                 android:textSize="18sp"
                 android:textColor="@android:color/black"
                 android:gravity="center"
-                android:visibility="gone" />
+                android:visibility="gone"
+                tools:text="@string/user_birthday_template"/>
 
             <TextView
                 android:id="@+id/passportText"

@@ -12,4 +12,20 @@
     <string name="passport_label">Паспорт: %s</string>
     <string name="avatar_description">Аватар пользователя</string>
     <string name="action_settings">Настройки</string>
+    <string name="user_full_name_template">Короленко Михаил Сергеевич</string>
+    <string name="user_birthday_template">04.08.1998</string>
+
+    <string name="setting_language">Язык общения</string>
+    <string name="setting_consultation_type">Тип консультаций</string>
+    <string name="setting_notifications">Уведомления</string>
+    <string name="setting_theme">Тема оформления</string>
+    <string name="setting_account">Аккаунт</string>
+    <string name="setting_about">О приложении</string>
+
+    <string name="language_russian">Русский</string>
+    <string name="consultation_civil_law">Гражданское право</string>
+    <string name="notifications_enabled">Включены</string>
+    <string name="theme_light">Светлая</string>
+    <string name="email">mikhail@example.com</string>
+    <string name="version">Версия 1.2.0</string>
 </resources>
