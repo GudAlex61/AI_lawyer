@@ -1,5 +1,3 @@
-// клик по аватарке - выбор фото из галереи и подставновка в профиль
-
 package com.example.myapplication
 
 import android.app.Activity
@@ -65,7 +63,7 @@ class ProfileFragment : Fragment() {
         } else {
             Toast.makeText(
                 requireContext(),
-                "Разрешение необходимо для выбора фото",
+                getString(R.string.request_permission_for_photo),
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -126,7 +124,7 @@ class ProfileFragment : Fragment() {
             shouldShowRequestPermissionRationale(permission) -> {
                 Toast.makeText(
                     requireContext(),
-                    "Разрешение необходимо для выбора фото из галереи",
+                    getString(R.string.request_permission_for_photo),
                     Toast.LENGTH_LONG
                 ).show()
                 requestPermissionLauncher.launch(permission)
@@ -160,7 +158,7 @@ class ProfileFragment : Fragment() {
                 e.printStackTrace()
                 Toast.makeText(
                     requireContext(),
-                    "Ошибка загрузки изображения",
+                    getString(R.string.error_loading_photo),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -195,16 +193,6 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private fun showLoading() {
-        progressBar.visibility = View.VISIBLE
-        errorText.visibility = View.GONE
-        fullNameText.visibility = View.GONE
-        birthDateText.visibility = View.GONE
-        passportText.visibility = View.GONE
-        hintText.visibility = View.GONE
-        avatar.visibility = View.GONE
-    }
-
     private fun showContent() {
         if (isAdded && !isDetached && activity != null) {
             progressBar.visibility = View.GONE
@@ -234,9 +222,7 @@ class ProfileFragment : Fragment() {
     }
 
     private fun loadData() {
-        showLoading()
         viewLifecycleOwner.lifecycleScope.launch {
-            delay(2000)
             withContext(IO) {
                 fullName = getString(R.string.user_full_name_template)
                 birthDate = getString(R.string.user_birthday_template)
@@ -249,7 +235,6 @@ class ProfileFragment : Fragment() {
     private fun simulatePassportInput() {
         passportText.isEnabled = false
         viewLifecycleOwner.lifecycleScope.launch {
-            delay(500)
             val newPassport = "8090${(100000..999999).random()}"
             withContext(IO) {
                 passportNumber = newPassport
