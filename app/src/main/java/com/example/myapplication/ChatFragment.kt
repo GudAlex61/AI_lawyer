@@ -165,10 +165,9 @@ class ChatFragment : Fragment() {
                 val preview = chat.getShortPreview()
 
                 text = if (chat.messages.isEmpty()) {
-                    "Новый чат"
+                    context.getString(R.string.empty_chat_title)
                 } else {
-                    "$title " +
-                            " $time "
+                    "$title $time"
                 }
 
                 setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12))
@@ -178,13 +177,13 @@ class ChatFragment : Fragment() {
                 isSingleLine = false
 
                 if (position == currentChatIndex) {
-                    setTextColor(Color.parseColor("#000000"))
+                    setTextColor(ContextCompat.getColor(context, R.color.current_chat_title))
                     setTypeface(null, Typeface.BOLD)
                 } else if (chat.isUnread()) {
-                    setTextColor(Color.parseColor("#1B5E20"))
+                    setTextColor(ContextCompat.getColor(context, R.color.unread_chat_title))
                     setTypeface(null, Typeface.BOLD)
                 } else {
-                    setTextColor(Color.parseColor("#374151"))
+                    setTextColor(ContextCompat.getColor(context, R.color.chat_title))
                     setTypeface(null, Typeface.NORMAL)
                 }
 
@@ -243,7 +242,11 @@ class ChatFragment : Fragment() {
         }
 
         attachButton.setOnClickListener {
-            Toast.makeText(requireContext(), "Функция прикрепления файлов", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                context?.getString(R.string.attach_function_toast), Toast.LENGTH_SHORT
+            )
+                .show()
         }
 
         messageInput.setOnEditorActionListener { _, actionId, _ ->
@@ -279,7 +282,11 @@ class ChatFragment : Fragment() {
     private fun createNewChat() {
         val currentMessages = getCurrentMessages()
         if (currentMessages.isEmpty()) {
-            Toast.makeText(requireContext(), "Текущий чат уже пуст", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                context?.getString(R.string.error_current_chat_empty),
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
@@ -294,7 +301,11 @@ class ChatFragment : Fragment() {
         isFirstMessage = true
 
         updateHistoryList()
-        Toast.makeText(requireContext(), "Новый чат создан", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            requireContext(),
+            context?.getString(R.string.toast_new_chat_created),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     private fun switchToChat(index: Int) {
@@ -404,7 +415,7 @@ class ChatFragment : Fragment() {
             messageLayout.gravity = Gravity.START
 
             val botIcon = TextView(requireContext()).apply {
-                text = "🤖"
+                text = context?.getString(R.string.ai_bot_emoji)
                 textSize = 24f
                 setPadding(0, dpToPx(4), dpToPx(8), 0)
                 layoutParams = LinearLayout.LayoutParams(
@@ -441,7 +452,11 @@ class ChatFragment : Fragment() {
         chatContainer.visibility = View.GONE
 
         updateHistoryList()
-        Toast.makeText(requireContext(), "Чат очищен", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            requireContext(),
+            context?.getString(R.string.toast_chat_cleared),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     private fun updateHistoryList() {
@@ -462,31 +477,10 @@ class ChatFragment : Fragment() {
 
                         put(JSONObject().apply {
                             put("role", "system")
-                            put("content", """
-                            Ты юридический консультант в чате Android-приложения.
-                            
-                            КРИТИЧЕСКИ ВАЖНО: Приложение отображает только ЧИСТЫЙ ТЕКСТ.
-                            Любые элементы форматирования сломают отображение!
-                            
-                            ЖЁСТКИЕ ПРАВИЛА:
-                            1. НИКАКОЙ РАЗМЕТКИ — ни Markdown, ни HTML
-                            2. НИКАКИХ СТРОК КОДА, ТАБЛИЦ
-                            3. Списки делай только через цифры с точкой (1. 2. 3.)
-                            4. Не используй **жирный**, *курсив*, `код`, ## заголовки
-                            5. Даже не пытайся "украсить" ответ — это сломает приложение
-                            
-                            Примеры ЗАПРЕЩЁННОГО форматирования:
-                            **Это жирный текст** — ПЛОХО
-                            *Это курсив* — ПЛОХО
-                            # Заголовок — ПЛОХО
-                            
-                            Примеры РАЗРЕШЁННОГО форматирования:
-                            Это обычный текст. — ХОРОШО
-                            1. Первый пункт. — ХОРОШО
-                            2. Второй пункт. — ХОРОШО
-                            
-                            Нарушение этих правил сделает твои ответы бесполезными.
-                        """.trimIndent())
+                            put(
+                                "content",
+                                context?.getString(R.string.ai_system_prompt)?.trimIndent()
+                            )
                         })
                         put(JSONObject().apply {
                             put("role", "user")
@@ -523,13 +517,19 @@ class ChatFragment : Fragment() {
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        addMessage("Ошибка API: ${response.code}", false)
+                        addMessage(
+                            context?.getString(R.string.error_api_code, response.code)
+                                ?: "API Error", false
+                        )
                         resetSendButton()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    addMessage("Ошибка соединения", false)
+                    addMessage(
+                        context?.getString(R.string.error_connection) ?: "Connection Error",
+                        false
+                    )
                     resetSendButton()
                 }
             }
@@ -550,10 +550,10 @@ class ChatFragment : Fragment() {
                 val message = firstChoice.getJSONObject("message")
                 message.getString("content").trim()
             } else {
-                "Не удалось получить ответ"
+                context?.getString(R.string.error_no_ai_response) ?: "No response"
             }
         } catch (e: Exception) {
-            "Ошибка обработки ответа"
+            context?.getString(R.string.error_parsing_response) ?: "Parsing error"
         }
     }
 }
