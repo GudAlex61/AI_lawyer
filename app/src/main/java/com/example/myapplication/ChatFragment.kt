@@ -92,9 +92,7 @@ class ChatFragment : Fragment() {
     private var isFirstMessage = true
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_chat, container, false)
     }
@@ -135,8 +133,7 @@ class ChatFragment : Fragment() {
     }
 
     private inner class ChatHistoryAdapter(
-        context: android.content.Context,
-        private val chats: List<Chat>
+        context: android.content.Context, private val chats: List<Chat>
     ) : ArrayAdapter<Chat>(context, 0, chats) {
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
@@ -150,19 +147,19 @@ class ChatFragment : Fragment() {
             val background = GradientDrawable().apply {
                 cornerRadius = dpToPx(12).toFloat()
                 if (position == currentChatIndex) {
-                    setColor(Color.parseColor("#FFF9C4"))
+                    setColor(ContextCompat.getColor(context, R.color.chat_history_selected_bg))
                 } else if (chat.isUnread()) {
-                    setColor(Color.parseColor("#E8F5E9"))
+                    setColor(ContextCompat.getColor(context, R.color.chat_history_unread_bg))
                 } else {
-                    setColor(Color.parseColor("#F3F4F6"))
+                    setColor(ContextCompat.getColor(context, R.color.chat_history_default_bg))
                 }
-                setStroke(dpToPx(1), Color.parseColor("#E5E7EB"))
+                setStroke(dpToPx(1), ContextCompat.getColor(context, R.color.chat_history_border))
             }
 
             textView.apply {
                 val title = chat.getTitle()
                 val time = chat.getLastMessageTime()
-                val preview = chat.getShortPreview()
+//                val preview = chat.getShortPreview()
 
                 text = if (chat.messages.isEmpty()) {
                     context.getString(R.string.empty_chat_title)
@@ -170,6 +167,7 @@ class ChatFragment : Fragment() {
                     "$title $time"
                 }
 
+                this.background = background
                 setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12))
                 textSize = 18f
                 maxLines = 5
@@ -200,8 +198,7 @@ class ChatFragment : Fragment() {
 
         scrollView = ScrollView(requireContext()).apply {
             layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT
             )
             isVerticalScrollBarEnabled = true
             overScrollMode = View.OVER_SCROLL_NEVER
@@ -210,8 +207,7 @@ class ChatFragment : Fragment() {
         messagesContainer = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
             )
             setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16))
         }
@@ -222,9 +218,7 @@ class ChatFragment : Fragment() {
 
     private fun dpToPx(dp: Int): Int {
         return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dp.toFloat(),
-            resources.displayMetrics
+            TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(), resources.displayMetrics
         ).toInt()
     }
 
@@ -244,9 +238,9 @@ class ChatFragment : Fragment() {
         attachButton.setOnClickListener {
             Toast.makeText(
                 requireContext(),
-                context?.getString(R.string.attach_function_toast), Toast.LENGTH_SHORT
-            )
-                .show()
+                context?.getString(R.string.attach_function_toast),
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         messageInput.setOnEditorActionListener { _, actionId, _ ->
@@ -364,8 +358,7 @@ class ChatFragment : Fragment() {
         val messageLayout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply {
                 topMargin = dpToPx(8)
                 bottomMargin = dpToPx(8)
@@ -384,15 +377,14 @@ class ChatFragment : Fragment() {
         val timeText = TextView(requireContext()).apply {
             text = message.time
             textSize = 10f
-            setTextColor(0xFF9CA3AF.toInt())
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.message_time_text))
             setPadding(dpToPx(8), dpToPx(2), dpToPx(8), dpToPx(2))
         }
 
         val textContainer = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
             )
         }
 
@@ -409,7 +401,11 @@ class ChatFragment : Fragment() {
             })
 
             messageText.setBackgroundResource(R.drawable.bubble_user)
-            messageText.setTextColor(0xFFFFFFFF.toInt())
+            messageText.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(), R.color.message_user_text
+                )
+            )
             messageLayout.addView(textContainer)
         } else {
             messageLayout.gravity = Gravity.START
@@ -419,14 +415,17 @@ class ChatFragment : Fragment() {
                 textSize = 24f
                 setPadding(0, dpToPx(4), dpToPx(8), 0)
                 layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
                 )
             }
             messageLayout.addView(botIcon)
 
             messageText.setBackgroundResource(R.drawable.bubble_bot)
-            messageText.setTextColor(0xFF000000.toInt())
+            messageText.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(), R.color.message_bot_text
+                )
+            )
             messageLayout.addView(textContainer)
 
             messageLayout.addView(View(requireContext()).apply {
@@ -453,9 +452,7 @@ class ChatFragment : Fragment() {
 
         updateHistoryList()
         Toast.makeText(
-            requireContext(),
-            context?.getString(R.string.toast_chat_cleared),
-            Toast.LENGTH_SHORT
+            requireContext(), context?.getString(R.string.toast_chat_cleared), Toast.LENGTH_SHORT
         ).show()
     }
 
@@ -493,17 +490,14 @@ class ChatFragment : Fragment() {
                 // БЕЗОПАСНОЕ ИСПОЛЬЗОВАНИЕ API КЛЮЧА
                 val apiKey = BuildConfig.OPENROUTER_API_KEY
 
-                val request = Request.Builder()
-                    .url("https://openrouter.ai/api/v1/chat/completions")
+                val request = Request.Builder().url("https://openrouter.ai/api/v1/chat/completions")
                     .addHeader("Authorization", "Bearer $apiKey")
                     .addHeader("Content-Type", "application/json")
-                    .post(json.toString().toRequestBody("application/json".toMediaType()))
-                    .build()
+                    .post(json.toString().toRequestBody("application/json".toMediaType())).build()
 
-                val client = OkHttpClient.Builder()
-                    .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-                    .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-                    .build()
+                val client =
+                    OkHttpClient.Builder().connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                        .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS).build()
 
                 val response = client.newCall(request).execute()
 
@@ -527,8 +521,7 @@ class ChatFragment : Fragment() {
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     addMessage(
-                        context?.getString(R.string.error_connection) ?: "Connection Error",
-                        false
+                        context?.getString(R.string.error_connection) ?: "Connection Error", false
                     )
                     resetSendButton()
                 }
