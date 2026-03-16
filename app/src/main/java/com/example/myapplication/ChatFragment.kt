@@ -146,24 +146,19 @@ class ChatFragment : Fragment() {
 
             val textView = view.findViewById<TextView>(android.R.id.text1)
 
-            // Создаем красивую карточку
             val background = GradientDrawable().apply {
                 cornerRadius = dpToPx(12).toFloat()
                 if (position == currentChatIndex) {
-                    // Текущий чат - желтый
-                    setColor(Color.parseColor("#FFF9C4")) // Светло-желтый
+                    setColor(Color.parseColor("#FFF9C4"))
                 } else if (chat.isUnread()) {
-                    // Непрочитанный чат (только вопрос от пользователя)
-                    setColor(Color.parseColor("#E8F5E9")) // Светло-зеленый
+                    setColor(Color.parseColor("#E8F5E9"))
                 } else {
-                    // Обычный чат
-                    setColor(Color.parseColor("#F3F4F6")) // Серый
+                    setColor(Color.parseColor("#F3F4F6"))
                 }
-                setStroke(dpToPx(1), Color.parseColor("#E5E7EB")) // Серая граница
+                setStroke(dpToPx(1), Color.parseColor("#E5E7EB"))
             }
 
             textView.apply {
-                // Заголовок
                 val title = chat.getTitle()
                 val time = chat.getLastMessageTime()
                 val preview = chat.getShortPreview()
@@ -175,27 +170,24 @@ class ChatFragment : Fragment() {
                             " $time "
                 }
 
-                // Внешний вид
                 setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12))
                 textSize = 18f
                 maxLines = 5
                 gravity = Gravity.START
                 isSingleLine = false
 
-                // Цвет текста
                 if (position == currentChatIndex) {
-                    setTextColor(Color.parseColor("#000000")) // Черный для активного
+                    setTextColor(Color.parseColor("#000000"))
                     setTypeface(null, Typeface.BOLD)
                 } else if (chat.isUnread()) {
-                    setTextColor(Color.parseColor("#1B5E20")) // Темно-зеленый для непрочитанного
+                    setTextColor(Color.parseColor("#1B5E20"))
                     setTypeface(null, Typeface.BOLD)
                 } else {
-                    setTextColor(Color.parseColor("#374151")) // Серый для остальных
+                    setTextColor(Color.parseColor("#374151"))
                     setTypeface(null, Typeface.NORMAL)
                 }
 
 
-                // Минимальная высота для красоты
                 minimumHeight = dpToPx(80)
             }
 
@@ -284,14 +276,12 @@ class ChatFragment : Fragment() {
     }
 
     private fun createNewChat() {
-        // Проверка: не создаем новый чат, если текущий пустой
         val currentMessages = getCurrentMessages()
         if (currentMessages.isEmpty()) {
             Toast.makeText(requireContext(), "Текущий чат уже пуст", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Создаем новый чат только если в текущем есть сообщения
         val newChat = Chat()
         chatHistory.add(newChat)
         currentChatIndex = chatHistory.size - 1
@@ -323,7 +313,7 @@ class ChatFragment : Fragment() {
                 }
             } else {
                 welcomeContainer.visibility = View.VISIBLE
-                chatContainer.visibility = View.VISIBLE // Изменено: показываем контейнер даже для пустого чата
+                chatContainer.visibility = View.VISIBLE
                 isFirstMessage = true
             }
 
