@@ -1,76 +1,20 @@
 package com.example.myapplication
 
-import android.graphics.Color
-import android.graphics.Typeface
-import android.graphics.drawable.GradientDrawable
+import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.util.TypedValue
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
-import androidx.core.content.ContextCompat
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import kotlinx.coroutines.*
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONArray
-import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.util.*
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 
 class ChatFragment : Fragment() {
 
-    data class Message(
-        val text: String,
-        val isUser: Boolean,
-        val time: String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
-    )
-
-    data class Chat(
-        val id: String = UUID.randomUUID().toString(),
-        val messages: MutableList<Message> = mutableListOf(),
-        val createdAt: String = SimpleDateFormat("dd.MM HH:mm", Locale.getDefault()).format(Date())
-    ) {
-        fun getTitle(): String {
-            val lastUserMessage = messages.lastOrNull { it.isUser }
-            return if (lastUserMessage != null) {
-                val text = lastUserMessage.text
-                if (text.length > 40) text.substring(0, 40) + "..." else text
-            } else {
-                "Новый чат"
-            }
-        }
-
-        fun getLastMessageTime(): String {
-            return messages.lastOrNull()?.time ?: createdAt
-        }
-
-        fun getShortPreview(): String {
-            return messages.firstOrNull()?.text?.take(60) ?: "Пустой чат"
-        }
-
-        fun isUnread(): Boolean {
-            return messages.size == 1 && messages[0].isUser
-        }
-    }
-
-    private val chatHistory = mutableListOf<Chat>()
-    private var currentChatIndex = 0
-
-    private fun getCurrentChat(): Chat {
-        if (chatHistory.isEmpty()) {
-            chatHistory.add(Chat())
-        }
-        return chatHistory[currentChatIndex]
-    }
-
-    private fun getCurrentMessages(): MutableList<Message> {
-        return getCurrentChat().messages
-    }
+    private val viewModel: ChatViewModel by viewModels()
 
     private lateinit var messagesContainer: LinearLayout
     private lateinit var scrollView: ScrollView
@@ -89,6 +33,10 @@ class ChatFragment : Fragment() {
     private lateinit var historyAdapter: ChatHistoryAdapter
 
     private var isFirstMessage = true
+
+    private val filePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let { handleSelectedFile(it) }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -114,84 +62,48 @@ class ChatFragment : Fragment() {
         closeMenuButton = view.findViewById(R.id.closeMenuButton)
         chatHistoryList = view.findViewById(R.id.chatHistoryList)
 
-        initChatHistory()
         initMessagesContainer(view)
 
         setupClickListeners()
         setupHistoryMenu()
 
-        chatContainer.visibility = View.GONE
-        welcomeContainer.visibility = View.VISIBLE
+        observeViewModel()
+
+        // Initial UI update
+        updateUIForCurrentChat()
     }
 
-    private fun initChatHistory() {
-        if (chatHistory.isEmpty()) {
-            chatHistory.add(Chat())
-        }
+    private fun observeViewModel() {
+        viewModel.chatHistory.observe(viewLifecycleOwner, Observer {
+            updateHistoryList()
+            updateUIForCurrentChat()
+        })
 
-        historyAdapter = ChatHistoryAdapter(requireContext(), chatHistory)
-        chatHistoryList.adapter = historyAdapter
+        viewModel.currentChatIndex.observe(viewLifecycleOwner, Observer {
+            updateHistoryList()
+            updateUIForCurrentChat()
+        })
+
+        viewModel.isLoading.observe(viewLifecycleOwner, Observer { loading ->
+            sendButton.text = if (loading) "⌛" else "↑"
+            sendButton.isEnabled = !loading
+        })
     }
 
-    private inner class ChatHistoryAdapter(
-        context: android.content.Context,
-        private val chats: List<Chat>
-    ) : ArrayAdapter<Chat>(context, 0, chats) {
-
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            val chat = chats[position]
-
-            val view = convertView ?: LayoutInflater.from(context)
-                .inflate(android.R.layout.simple_list_item_1, parent, false)
-
-            val textView = view.findViewById<TextView>(android.R.id.text1)
-
-            val background = GradientDrawable().apply {
-                cornerRadius = dpToPx(12).toFloat()
-                if (position == currentChatIndex) {
-                    setColor(Color.parseColor("#FFF9C4"))
-                } else if (chat.isUnread()) {
-                    setColor(Color.parseColor("#E8F5E9"))
-                } else {
-                    setColor(Color.parseColor("#F3F4F6"))
-                }
-                setStroke(dpToPx(1), Color.parseColor("#E5E7EB"))
+    private fun updateUIForCurrentChat() {
+        val chat = viewModel.getCurrentChat()
+        clearChatUI()
+        if (chat.messages.isNotEmpty()) {
+            welcomeContainer.visibility = View.GONE
+            chatContainer.visibility = View.VISIBLE
+            isFirstMessage = false
+            for (message in chat.messages) {
+                addMessageToUI(message)
             }
-
-            textView.apply {
-                val title = chat.getTitle()
-                val time = chat.getLastMessageTime()
-                val preview = chat.getShortPreview()
-
-                text = if (chat.messages.isEmpty()) {
-                    "Новый чат"
-                } else {
-                    "$title " +
-                            " $time "
-                }
-
-                setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12))
-                textSize = 18f
-                maxLines = 5
-                gravity = Gravity.START
-                isSingleLine = false
-
-                if (position == currentChatIndex) {
-                    setTextColor(Color.parseColor("#000000"))
-                    setTypeface(null, Typeface.BOLD)
-                } else if (chat.isUnread()) {
-                    setTextColor(Color.parseColor("#1B5E20"))
-                    setTypeface(null, Typeface.BOLD)
-                } else {
-                    setTextColor(Color.parseColor("#374151"))
-                    setTypeface(null, Typeface.NORMAL)
-                }
-
-
-                minimumHeight = dpToPx(80)
-            }
-
-            return view
+        } else {
+            welcomeContainer.visibility = View.VISIBLE
+            chatContainer.visibility = View.VISIBLE
+            isFirstMessage = true
         }
     }
 
@@ -229,39 +141,48 @@ class ChatFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        sendButton.setOnClickListener {
-            sendMessage()
-        }
+        sendButton.setOnClickListener { sendMessage() }
 
         newChatButton.setOnClickListener {
-            createNewChat()
+            viewModel.createNewChat()
         }
 
-        menuButton.setOnClickListener {
-            showHistoryMenu()
-        }
+        menuButton.setOnClickListener { showHistoryMenu() }
 
         attachButton.setOnClickListener {
-            Toast.makeText(requireContext(), "Функция прикрепления файлов", Toast.LENGTH_SHORT).show()
+            filePickerLauncher.launch("*/*") // все типы файлов
         }
 
         messageInput.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEND) {
                 sendMessage()
                 true
-            } else {
-                false
-            }
+            } else false
         }
     }
 
-    private fun setupHistoryMenu() {
-        closeMenuButton.setOnClickListener {
-            hideHistoryMenu()
+    private fun handleSelectedFile(uri: Uri) {
+        val fileName = getFileName(uri) ?: "Файл"
+        // Отправляем сообщение с именем файла (можно расширить до чтения содержимого)
+        viewModel.sendMessage("Прикреплен файл: $fileName", true)
+    }
+
+    private fun getFileName(uri: Uri): String? {
+        var name: String? = null
+        requireContext().contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (cursor.moveToFirst() && nameIndex != -1) {
+                name = cursor.getString(nameIndex)
+            }
         }
+        return name
+    }
+
+    private fun setupHistoryMenu() {
+        closeMenuButton.setOnClickListener { hideHistoryMenu() }
 
         chatHistoryList.setOnItemClickListener { _, _, position, _ ->
-            switchToChat(position)
+            viewModel.switchToChat(position)
             hideHistoryMenu()
         }
     }
@@ -275,77 +196,12 @@ class ChatFragment : Fragment() {
         historyMenu.visibility = View.GONE
     }
 
-    private fun createNewChat() {
-        val currentMessages = getCurrentMessages()
-        if (currentMessages.isEmpty()) {
-            Toast.makeText(requireContext(), "Текущий чат уже пуст", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val newChat = Chat()
-        chatHistory.add(newChat)
-        currentChatIndex = chatHistory.size - 1
-
-        clearChatUI()
-
-        welcomeContainer.visibility = View.VISIBLE
-        chatContainer.visibility = View.GONE
-        isFirstMessage = true
-
-        updateHistoryList()
-        Toast.makeText(requireContext(), "Новый чат создан", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun switchToChat(index: Int) {
-        if (index in chatHistory.indices && index != currentChatIndex) {
-            currentChatIndex = index
-            val chat = getCurrentChat()
-
-            clearChatUI()
-
-            if (chat.messages.isNotEmpty()) {
-                welcomeContainer.visibility = View.GONE
-                chatContainer.visibility = View.VISIBLE
-                isFirstMessage = false
-
-                for (message in chat.messages) {
-                    addMessageToUI(message)
-                }
-            } else {
-                welcomeContainer.visibility = View.VISIBLE
-                chatContainer.visibility = View.VISIBLE
-                isFirstMessage = true
-            }
-
-            updateHistoryList()
-        }
-    }
-
     private fun sendMessage() {
         val text = messageInput.text.toString().trim()
         if (text.isNotEmpty()) {
-            if (isFirstMessage) {
-                isFirstMessage = false
-                welcomeContainer.visibility = View.GONE
-                chatContainer.visibility = View.VISIBLE
-            }
-
-            addMessage(text, true)
+            viewModel.sendMessage(text, true)
             messageInput.text.clear()
-            getAIResponse(text)
         }
-    }
-
-    private fun addMessage(text: String, isUser: Boolean) {
-        val message = Message(text, isUser)
-        getCurrentMessages().add(message)
-        addMessageToUI(message)
-
-        scrollView.postDelayed({
-            scrollView.fullScroll(View.FOCUS_DOWN)
-        }, 100)
-
-        updateHistoryList()
     }
 
     private fun addMessageToUI(message: Message) {
@@ -361,7 +217,7 @@ class ChatFragment : Fragment() {
         }
 
         val messageText = TextView(requireContext()).apply {
-            this.text = message.text
+            text = message.text
             textSize = 16f
             setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12))
 
@@ -391,9 +247,7 @@ class ChatFragment : Fragment() {
             messageLayout.gravity = Gravity.END
 
             messageLayout.addView(View(requireContext()).apply {
-                layoutParams = LinearLayout.LayoutParams(0, 0).apply {
-                    weight = 1f
-                }
+                layoutParams = LinearLayout.LayoutParams(0, 0).apply { weight = 1f }
             })
 
             messageText.setBackgroundResource(R.drawable.bubble_user)
@@ -418,140 +272,24 @@ class ChatFragment : Fragment() {
             messageLayout.addView(textContainer)
 
             messageLayout.addView(View(requireContext()).apply {
-                layoutParams = LinearLayout.LayoutParams(0, 0).apply {
-                    weight = 1f
-                }
+                layoutParams = LinearLayout.LayoutParams(0, 0).apply { weight = 1f }
             })
         }
 
         messagesContainer.addView(messageLayout)
+
+        // Прокрутка вниз
+        scrollView.post { scrollView.fullScroll(View.FOCUS_DOWN) }
     }
 
     private fun clearChatUI() {
         messagesContainer.removeAllViews()
     }
 
-    private fun clearChat() {
-        getCurrentMessages().clear()
-        clearChatUI()
-        isFirstMessage = true
-
-        welcomeContainer.visibility = View.VISIBLE
-        chatContainer.visibility = View.GONE
-
-        updateHistoryList()
-        Toast.makeText(requireContext(), "Чат очищен", Toast.LENGTH_SHORT).show()
-    }
-
     private fun updateHistoryList() {
-        historyAdapter.notifyDataSetChanged()
-    }
-
-    private fun getAIResponse(userMessage: String) {
-        sendButton.text = "⌛"
-        sendButton.isEnabled = false
-
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val json = JSONObject().apply {
-                    put("model", "openai/gpt-3.5-turbo")
-                    put("max_tokens", 500)
-
-                    val messagesArray = JSONArray().apply {
-
-                        put(JSONObject().apply {
-                            put("role", "system")
-                            put("content", """
-                            Ты юридический консультант в чате Android-приложения.
-                            
-                            КРИТИЧЕСКИ ВАЖНО: Приложение отображает только ЧИСТЫЙ ТЕКСТ.
-                            Любые элементы форматирования сломают отображение!
-                            
-                            ЖЁСТКИЕ ПРАВИЛА:
-                            1. НИКАКОЙ РАЗМЕТКИ — ни Markdown, ни HTML
-                            2. НИКАКИХ СТРОК КОДА, ТАБЛИЦ
-                            3. Списки делай только через цифры с точкой (1. 2. 3.)
-                            4. Не используй **жирный**, *курсив*, `код`, ## заголовки
-                            5. Даже не пытайся "украсить" ответ — это сломает приложение
-                            
-                            Примеры ЗАПРЕЩЁННОГО форматирования:
-                            **Это жирный текст** — ПЛОХО
-                            *Это курсив* — ПЛОХО
-                            # Заголовок — ПЛОХО
-                            
-                            Примеры РАЗРЕШЁННОГО форматирования:
-                            Это обычный текст. — ХОРОШО
-                            1. Первый пункт. — ХОРОШО
-                            2. Второй пункт. — ХОРОШО
-                            
-                            Нарушение этих правил сделает твои ответы бесполезными.
-                        """.trimIndent())
-                        })
-                        put(JSONObject().apply {
-                            put("role", "user")
-                            put("content", userMessage)
-                        })
-                    }
-                    put("messages", messagesArray)
-                }
-
-                val apiKey = BuildConfig.OPENROUTER_API_KEY
-
-                val request = Request.Builder()
-                    .url("https://openrouter.ai/api/v1/chat/completions")
-                    .addHeader("Authorization", "Bearer $apiKey")
-                    .addHeader("Content-Type", "application/json")
-                    .post(json.toString().toRequestBody("application/json".toMediaType()))
-                    .build()
-
-                val client = OkHttpClient.Builder()
-                    .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-                    .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-                    .build()
-
-                val response = client.newCall(request).execute()
-
-                if (response.isSuccessful) {
-                    val responseBody = response.body?.string()
-                    val aiResponse = parseAIResponse(responseBody)
-
-                    withContext(Dispatchers.Main) {
-                        addMessage(aiResponse, false)
-                        resetSendButton()
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        addMessage("Ошибка API: ${response.code}", false)
-                        resetSendButton()
-                    }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    addMessage("Ошибка соединения", false)
-                    resetSendButton()
-                }
-            }
-        }
-    }
-
-    private fun resetSendButton() {
-        sendButton.text = "↑"
-        sendButton.isEnabled = true
-    }
-
-    private fun parseAIResponse(responseBody: String?): String {
-        return try {
-            val json = JSONObject(responseBody ?: "")
-            val choices = json.getJSONArray("choices")
-            if (choices.length() > 0) {
-                val firstChoice = choices.getJSONObject(0)
-                val message = firstChoice.getJSONObject("message")
-                message.getString("content").trim()
-            } else {
-                "Не удалось получить ответ"
-            }
-        } catch (e: Exception) {
-            "Ошибка обработки ответа"
-        }
+        val currentIndex = viewModel.currentChatIndex.value ?: 0
+        val chats = viewModel.chatHistory.value ?: listOf()
+        historyAdapter = ChatHistoryAdapter(requireContext(), chats, currentIndex)
+        chatHistoryList.adapter = historyAdapter
     }
 }
