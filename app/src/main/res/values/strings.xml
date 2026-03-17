@@ -21,7 +21,7 @@
     <string name="setting_consultation_type">Тип консультаций</string>
     <string name="setting_notifications">Уведомления</string>
     <string name="setting_theme">Тема оформления</string>
-    <string name="setting_account">Аккаунт</string>
+    <string name="setting_account">Акаунт</string>
     <string name="setting_about">О приложении</string>
 
     <string name="language_russian">Русский</string>
@@ -30,4 +30,41 @@
     <string name="theme_light">Светлая</string>
     <string name="email">mikhail@example.com</string>
     <string name="version">Версия 1.2.0</string>
+
+    <string name="empty_chat_title">Новый чат</string>
+    <string name="empty_chat_preview">Пустой чат</string>
+    <string name="attach_function_toast">Функция прикрепления файлов</string>
+    <string name="error_current_chat_empty">Текущий чат уже пуст</string>
+    <string name="toast_new_chat_created">Новый чат создан</string>
+    <string name="toast_chat_cleared">Чат очищен</string>
+    <string name="error_no_ai_response">Не удалось получить ответ</string>
+    <string name="error_parsing_response">Ошибка обработки ответа</string>
+    <string name="error_api_code">Ошибка API: %1$d</string>
+    <string name="error_connection">Ошибка соединения</string>
+    <string name="ai_bot_emoji">🤖</string>
+    <string name="ai_system_prompt">
+        Ты юридический консультант в чате Android-приложения.
+
+        КРИТИЧЕСКИ ВАЖНО: Приложение отображает только ЧИСТЫЙ ТЕКСТ.
+        Любые элементы форматирования сломают отображение!
+
+        ЖЁСТКИЕ ПРАВИЛА:
+        1. НИКАКОЙ РАЗМЕТКИ — ни Markdown, ни HTML
+        2. НИКАКИХ СТРОК КОДА, ТАБЛИЦ
+        3. Списки делай только через цифры с точкой (1. 2. 3.)
+        4. Не используй **жирный**, *курсив*, `код`, ## заголовки
+        5. Даже не пытайся \"украсить\" ответ — это сломает приложение
+
+        Примеры ЗАПРЕЩЁННОГО форматирования:
+        **Это жирный текст** — ПЛОХО
+        *Это курсив* — ПЛОХО
+        # Заголовок — ПЛОХО
+
+        Примеры РАЗРЕШЁННОГО форматирования:
+        Это обычный текст. — ХОРОШО
+        1. Первый пункт. — ХОРОШО
+        2. Второй пункт. — ХОРОШО
+
+        Нарушение этих правил сделает твои ответы бесполезными.
+    </string>
 </resources>

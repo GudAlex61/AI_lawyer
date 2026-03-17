@@ -92,9 +92,7 @@ class ChatFragment : Fragment() {
     private var isFirstMessage = true
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_chat, container, false)
     }
@@ -135,8 +133,7 @@ class ChatFragment : Fragment() {
     }
 
     private inner class ChatHistoryAdapter(
-        context: android.content.Context,
-        private val chats: List<Chat>
+        context: android.content.Context, private val chats: List<Chat>
     ) : ArrayAdapter<Chat>(context, 0, chats) {
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
@@ -150,27 +147,27 @@ class ChatFragment : Fragment() {
             val background = GradientDrawable().apply {
                 cornerRadius = dpToPx(12).toFloat()
                 if (position == currentChatIndex) {
-                    setColor(Color.parseColor("#FFF9C4"))
+                    setColor(ContextCompat.getColor(context, R.color.chat_history_selected_bg))
                 } else if (chat.isUnread()) {
-                    setColor(Color.parseColor("#E8F5E9"))
+                    setColor(ContextCompat.getColor(context, R.color.chat_history_unread_bg))
                 } else {
-                    setColor(Color.parseColor("#F3F4F6"))
+                    setColor(ContextCompat.getColor(context, R.color.chat_history_default_bg))
                 }
-                setStroke(dpToPx(1), Color.parseColor("#E5E7EB"))
+                setStroke(dpToPx(1), ContextCompat.getColor(context, R.color.chat_history_border))
             }
 
             textView.apply {
                 val title = chat.getTitle()
                 val time = chat.getLastMessageTime()
-                val preview = chat.getShortPreview()
+//                val preview = chat.getShortPreview()
 
                 text = if (chat.messages.isEmpty()) {
-                    "Новый чат"
+                    context.getString(R.string.empty_chat_title)
                 } else {
-                    "$title " +
-                            " $time "
+                    "$title $time"
                 }
 
+                this.background = background
                 setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12))
                 textSize = 18f
                 maxLines = 5
@@ -178,13 +175,13 @@ class ChatFragment : Fragment() {
                 isSingleLine = false
 
                 if (position == currentChatIndex) {
-                    setTextColor(Color.parseColor("#000000"))
+                    setTextColor(ContextCompat.getColor(context, R.color.current_chat_title))
                     setTypeface(null, Typeface.BOLD)
                 } else if (chat.isUnread()) {
-                    setTextColor(Color.parseColor("#1B5E20"))
+                    setTextColor(ContextCompat.getColor(context, R.color.unread_chat_title))
                     setTypeface(null, Typeface.BOLD)
                 } else {
-                    setTextColor(Color.parseColor("#374151"))
+                    setTextColor(ContextCompat.getColor(context, R.color.chat_title))
                     setTypeface(null, Typeface.NORMAL)
                 }
 
@@ -201,8 +198,7 @@ class ChatFragment : Fragment() {
 
         scrollView = ScrollView(requireContext()).apply {
             layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT
             )
             isVerticalScrollBarEnabled = true
             overScrollMode = View.OVER_SCROLL_NEVER
@@ -211,8 +207,7 @@ class ChatFragment : Fragment() {
         messagesContainer = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
             )
             setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16))
         }
@@ -223,9 +218,7 @@ class ChatFragment : Fragment() {
 
     private fun dpToPx(dp: Int): Int {
         return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dp.toFloat(),
-            resources.displayMetrics
+            TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(), resources.displayMetrics
         ).toInt()
     }
 
@@ -243,7 +236,11 @@ class ChatFragment : Fragment() {
         }
 
         attachButton.setOnClickListener {
-            Toast.makeText(requireContext(), "Функция прикрепления файлов", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                context?.getString(R.string.attach_function_toast),
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         messageInput.setOnEditorActionListener { _, actionId, _ ->
@@ -279,7 +276,11 @@ class ChatFragment : Fragment() {
     private fun createNewChat() {
         val currentMessages = getCurrentMessages()
         if (currentMessages.isEmpty()) {
-            Toast.makeText(requireContext(), "Текущий чат уже пуст", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                context?.getString(R.string.error_current_chat_empty),
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
@@ -294,7 +295,11 @@ class ChatFragment : Fragment() {
         isFirstMessage = true
 
         updateHistoryList()
-        Toast.makeText(requireContext(), "Новый чат создан", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            requireContext(),
+            context?.getString(R.string.toast_new_chat_created),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     private fun switchToChat(index: Int) {
@@ -353,8 +358,7 @@ class ChatFragment : Fragment() {
         val messageLayout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply {
                 topMargin = dpToPx(8)
                 bottomMargin = dpToPx(8)
@@ -373,15 +377,14 @@ class ChatFragment : Fragment() {
         val timeText = TextView(requireContext()).apply {
             text = message.time
             textSize = 10f
-            setTextColor(0xFF9CA3AF.toInt())
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.message_time_text))
             setPadding(dpToPx(8), dpToPx(2), dpToPx(8), dpToPx(2))
         }
 
         val textContainer = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
             )
         }
 
@@ -398,24 +401,31 @@ class ChatFragment : Fragment() {
             })
 
             messageText.setBackgroundResource(R.drawable.bubble_user)
-            messageText.setTextColor(0xFFFFFFFF.toInt())
+            messageText.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(), R.color.message_user_text
+                )
+            )
             messageLayout.addView(textContainer)
         } else {
             messageLayout.gravity = Gravity.START
 
             val botIcon = TextView(requireContext()).apply {
-                text = "🤖"
+                text = context?.getString(R.string.ai_bot_emoji)
                 textSize = 24f
                 setPadding(0, dpToPx(4), dpToPx(8), 0)
                 layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
                 )
             }
             messageLayout.addView(botIcon)
 
             messageText.setBackgroundResource(R.drawable.bubble_bot)
-            messageText.setTextColor(0xFF000000.toInt())
+            messageText.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(), R.color.message_bot_text
+                )
+            )
             messageLayout.addView(textContainer)
 
             messageLayout.addView(View(requireContext()).apply {
@@ -441,7 +451,9 @@ class ChatFragment : Fragment() {
         chatContainer.visibility = View.GONE
 
         updateHistoryList()
-        Toast.makeText(requireContext(), "Чат очищен", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            requireContext(), context?.getString(R.string.toast_chat_cleared), Toast.LENGTH_SHORT
+        ).show()
     }
 
     private fun updateHistoryList() {
@@ -462,31 +474,10 @@ class ChatFragment : Fragment() {
 
                         put(JSONObject().apply {
                             put("role", "system")
-                            put("content", """
-                            Ты юридический консультант в чате Android-приложения.
-                            
-                            КРИТИЧЕСКИ ВАЖНО: Приложение отображает только ЧИСТЫЙ ТЕКСТ.
-                            Любые элементы форматирования сломают отображение!
-                            
-                            ЖЁСТКИЕ ПРАВИЛА:
-                            1. НИКАКОЙ РАЗМЕТКИ — ни Markdown, ни HTML
-                            2. НИКАКИХ СТРОК КОДА, ТАБЛИЦ
-                            3. Списки делай только через цифры с точкой (1. 2. 3.)
-                            4. Не используй **жирный**, *курсив*, `код`, ## заголовки
-                            5. Даже не пытайся "украсить" ответ — это сломает приложение
-                            
-                            Примеры ЗАПРЕЩЁННОГО форматирования:
-                            **Это жирный текст** — ПЛОХО
-                            *Это курсив* — ПЛОХО
-                            # Заголовок — ПЛОХО
-                            
-                            Примеры РАЗРЕШЁННОГО форматирования:
-                            Это обычный текст. — ХОРОШО
-                            1. Первый пункт. — ХОРОШО
-                            2. Второй пункт. — ХОРОШО
-                            
-                            Нарушение этих правил сделает твои ответы бесполезными.
-                        """.trimIndent())
+                            put(
+                                "content",
+                                context?.getString(R.string.ai_system_prompt)?.trimIndent()
+                            )
                         })
                         put(JSONObject().apply {
                             put("role", "user")
@@ -499,17 +490,14 @@ class ChatFragment : Fragment() {
                 // БЕЗОПАСНОЕ ИСПОЛЬЗОВАНИЕ API КЛЮЧА
                 val apiKey = BuildConfig.OPENROUTER_API_KEY
 
-                val request = Request.Builder()
-                    .url("https://openrouter.ai/api/v1/chat/completions")
+                val request = Request.Builder().url("https://openrouter.ai/api/v1/chat/completions")
                     .addHeader("Authorization", "Bearer $apiKey")
                     .addHeader("Content-Type", "application/json")
-                    .post(json.toString().toRequestBody("application/json".toMediaType()))
-                    .build()
+                    .post(json.toString().toRequestBody("application/json".toMediaType())).build()
 
-                val client = OkHttpClient.Builder()
-                    .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-                    .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-                    .build()
+                val client =
+                    OkHttpClient.Builder().connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                        .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS).build()
 
                 val response = client.newCall(request).execute()
 
@@ -523,13 +511,18 @@ class ChatFragment : Fragment() {
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        addMessage("Ошибка API: ${response.code}", false)
+                        addMessage(
+                            context?.getString(R.string.error_api_code, response.code)
+                                ?: "API Error", false
+                        )
                         resetSendButton()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    addMessage("Ошибка соединения", false)
+                    addMessage(
+                        context?.getString(R.string.error_connection) ?: "Connection Error", false
+                    )
                     resetSendButton()
                 }
             }
@@ -550,10 +543,10 @@ class ChatFragment : Fragment() {
                 val message = firstChoice.getJSONObject("message")
                 message.getString("content").trim()
             } else {
-                "Не удалось получить ответ"
+                context?.getString(R.string.error_no_ai_response) ?: "No response"
             }
         } catch (e: Exception) {
-            "Ошибка обработки ответа"
+            context?.getString(R.string.error_parsing_response) ?: "Parsing error"
         }
     }
 }
