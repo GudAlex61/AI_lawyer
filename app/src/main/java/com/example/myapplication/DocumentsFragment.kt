@@ -1,16 +1,19 @@
 package com.example.myapplication
 
-
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.launch
 
 // унести логику во вьюмодель, выделить state (StateFlow)
 class DocumentsFragment : Fragment(R.layout.fragment_documents) {
@@ -18,20 +21,7 @@ class DocumentsFragment : Fragment(R.layout.fragment_documents) {
     private lateinit var recyclerView: RecyclerView
     private lateinit var favoritesButton: ImageView
 
-    private var isFavoritesMode = false
-
-    private val documents = mutableListOf(
-        Document("Трудовой договор", "20.12.2024"),
-        Document("Договор аренды", "21.12.2024"),
-        Document("Претензия контрагенту", "22.12.2024"),
-        Document("Исковое заявление", "23.12.2024"),
-        Document("Соглашение о расторжении", "24.12.2024"),
-        Document("Политика конфиденциальности", "25.12.2024"),
-        Document("Договор оказания услуг", "26.12.2024"),
-        Document("Доверенность", "27.12.2024"),
-        Document("Жалоба в госорган", "28.12.2024"),
-        Document("Пользовательское соглашение", "29.12.2024")
-    )
+    private val viewModel: DocumentsViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -40,42 +30,37 @@ class DocumentsFragment : Fragment(R.layout.fragment_documents) {
         favoritesButton = view.findViewById(R.id.btnFavorites)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        updateList()
 
         favoritesButton.setOnClickListener {
-            isFavoritesMode = !isFavoritesMode
-            favoritesButton.setImageResource(
-                if (isFavoritesMode) R.drawable.ic_star_filled
-                else R.drawable.ic_star_outline
-            )
+            viewModel.toggleFavoritesMode()
+        }
 
-            favoritesButton.setColorFilter(
-                if (isFavoritesMode)
-                    requireContext().getColor(R.color.yellow_500)
-                else
-                    requireContext().getColor(R.color.gray_500)
-            )
-            updateList()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.state.collect { state ->
+                    favoritesButton.setImageResource(
+                        if (state.isFavoritesMode) R.drawable.ic_star_filled
+                        else R.drawable.ic_star_outline
+                    )
+
+                    favoritesButton.setColorFilter(
+                        if (state.isFavoritesMode)
+                            requireContext().getColor(R.color.yellow_500)
+                        else
+                            requireContext().getColor(R.color.gray_500)
+                    )
+
+                    recyclerView.adapter = DocumentsAdapter(state.visibleDocuments) { doc ->
+                        viewModel.toggleFavorite(doc)
+                    }
+                }
+            }
         }
     }
-
-    private fun updateList() {
-        val list = if (isFavoritesMode) {
-            documents.filter { it.isFavorite }
-        } else {
-            documents
-        }
-        recyclerView.adapter = DocumentsAdapter(list)
-    }
-
-    data class Document(
-        val title: String,
-        val date: String,
-        var isFavorite: Boolean = false
-    )
 
     inner class DocumentsAdapter(
-        private val items: List<Document>
+        private val items: List<Document>,
+        private val onStarClick: (Document) -> Unit
     ) : RecyclerView.Adapter<DocumentsAdapter.ViewHolder>() {
 
         inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -108,10 +93,8 @@ class DocumentsFragment : Fragment(R.layout.fragment_documents) {
                     holder.itemView.context.getColor(R.color.gray_400)
             )
 
-
             holder.star.setOnClickListener {
-                doc.isFavorite = !doc.isFavorite
-                notifyItemChanged(position)
+                onStarClick(doc)
             }
         }
 
