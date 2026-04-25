@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">AI Lawyer</string>
     <string name="hint_send_message">Отправить сообщение</string>
     <string name="help_message">Чем могу помочь вам сегодня?</string>
     <string name="hi_message">Привет, я AI Lawyer.</string>
