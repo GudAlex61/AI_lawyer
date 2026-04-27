@@ -6,7 +6,9 @@ import java.util.*
 data class Message(
     val text: String,
     val isUser: Boolean,
-    val time: String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+    val time: String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+    val attachmentName: String? = null,
+    val attachmentMimeType: String? = null
 )
 
 data class Chat(
@@ -17,7 +19,7 @@ data class Chat(
     fun getTitle(): String {
         val lastUserMessage = messages.lastOrNull { it.isUser }
         return if (lastUserMessage != null) {
-            val text = lastUserMessage.text
+            val text = lastUserMessage.attachmentName ?: lastUserMessage.text
             if (text.length > 40) text.substring(0, 40) + "..." else text
         } else {
             "Новый чат"
@@ -29,7 +31,12 @@ data class Chat(
     }
 
     fun getShortPreview(): String {
-        return messages.firstOrNull()?.text?.take(60) ?: "Пустой чат"
+        val first = messages.firstOrNull() ?: return "Пустой чат"
+        return if (first.attachmentName != null) {
+            "Файл: ${first.attachmentName}".take(60)
+        } else {
+            first.text.take(60)
+        }
     }
 
     fun isUnread(): Boolean {
