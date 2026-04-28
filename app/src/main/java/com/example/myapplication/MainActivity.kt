@@ -8,6 +8,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
+    private var chatFragment: ChatFragment? = null
+    private var documentsFragment: DocumentsFragment? = null
+    private var profileFragment: ProfileFragment? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -20,27 +24,31 @@ class MainActivity : AppCompatActivity() {
 
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
-        // Устанавливаем начальный фрагмент И выделяем пункт чата
         if (savedInstanceState == null) {
-            bottomNavigationView.selectedItemId = R.id.navigation_chat // ВЫДЕЛИТЬ ПУНКТ ЧАТА
+            chatFragment = ChatFragment()
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, ChatFragment())
+                .add(R.id.fragment_container, chatFragment!!, "chat")
                 .commit()
+            bottomNavigationView.selectedItemId = R.id.navigation_chat
+        } else {
+            // Восстанавливаем ссылки на уже добавленные фрагменты после пересоздания Activity
+            chatFragment = supportFragmentManager.findFragmentByTag("chat") as? ChatFragment
+            documentsFragment = supportFragmentManager.findFragmentByTag("documents") as? DocumentsFragment
+            profileFragment = supportFragmentManager.findFragmentByTag("profile") as? ProfileFragment
         }
 
-        // Обработка нажатий на элементы навигации
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_documents -> {
-                    replaceFragment(DocumentsFragment())
+                    showFragment("documents")
                     true
                 }
                 R.id.navigation_chat -> {
-                    replaceFragment(ChatFragment())
+                    showFragment("chat")
                     true
                 }
                 R.id.navigation_profile -> {
-                    replaceFragment(ProfileFragment())
+                    showFragment("profile")
                     true
                 }
                 else -> false
@@ -48,9 +56,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun replaceFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .commit()
+    private fun showFragment(tag: String) {
+        val transaction = supportFragmentManager.beginTransaction()
+
+        // Скрываем все текущие видимые фрагменты
+        supportFragmentManager.fragments.forEach { fragment ->
+            if (!fragment.isHidden) {
+                transaction.hide(fragment)
+            }
+        }
+
+        // Показываем или добавляем нужный фрагмент
+        val existing = supportFragmentManager.findFragmentByTag(tag)
+        if (existing != null) {
+            transaction.show(existing)
+        } else {
+            val newFragment: Fragment = when (tag) {
+                "chat" -> ChatFragment().also { chatFragment = it }
+                "documents" -> DocumentsFragment().also { documentsFragment = it }
+                "profile" -> ProfileFragment().also { profileFragment = it }
+                else -> return
+            }
+            transaction.add(R.id.fragment_container, newFragment, tag)
+        }
+
+        transaction.commit()
     }
 }
