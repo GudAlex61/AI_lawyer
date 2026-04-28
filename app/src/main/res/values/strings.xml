@@ -1,8 +1,70 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">AI Lawyer</string>
     <string name="hint_send_message">Отправить сообщение</string>
     <string name="help_message">Чем могу помочь вам сегодня?</string>
     <string name="hi_message">Привет, я AI Lawyer.</string>
     <string name="error_network">Ошибка сети. Проверьте подключение.</string>
     <string name="error_api">Ошибка API. Попробуйте позже.</string>
+    <string name="birth_date_label">Дата рождения: %s</string>
+    <string name="not_entered">не введен</string>
+    <string name="error_load">Не удалось загрузить данные</string>
+    <string name="auto_fill_hint">*Эти данные будут автоматически подставляться в Ваши документы</string>
+    <string name="passport_label">Паспорт: %s</string>
+    <string name="avatar_description">Аватар пользователя</string>
+    <string name="action_settings">Настройки</string>
+    <string name="user_full_name_template">Короленко Михаил Сергеевич</string>
+    <string name="user_birthday_template">04.08.1998</string>
+    <string name="error_loading_photo">Ошибка загрузки изображения</string>
+    <string name="request_permission_for_photo">Разрешение необходимо для выбора фото из галереи</string>
+
+    <string name="setting_language">Язык общения</string>
+    <string name="setting_consultation_type">Тип консультаций</string>
+    <string name="setting_notifications">Уведомления</string>
+    <string name="setting_theme">Тема оформления</string>
+    <string name="setting_account">Акаунт</string>
+    <string name="setting_about">О приложении</string>
+
+    <string name="language_russian">Русский</string>
+    <string name="consultation_civil_law">Гражданское право</string>
+    <string name="notifications_enabled">Включены</string>
+    <string name="theme_light">Светлая</string>
+    <string name="email">mikhail@example.com</string>
+    <string name="version">Версия 1.2.0</string>
+
+    <string name="empty_chat_title">Новый чат</string>
+    <string name="empty_chat_preview">Пустой чат</string>
+    <string name="attach_function_toast">Функция прикрепления файлов</string>
+    <string name="error_current_chat_empty">Текущий чат уже пуст</string>
+    <string name="toast_new_chat_created">Новый чат создан</string>
+    <string name="toast_chat_cleared">Чат очищен</string>
+    <string name="error_no_ai_response">Не удалось получить ответ</string>
+    <string name="error_parsing_response">Ошибка обработки ответа</string>
+    <string name="error_api_code">Ошибка API: %1$d</string>
+    <string name="error_connection">Ошибка соединения</string>
+    <string name="ai_bot_emoji">🤖</string>
+    <string name="ai_system_prompt">
+        Ты юридический консультант в чате Android-приложения.
+
+        КРИТИЧЕСКИ ВАЖНО: Приложение отображает только ЧИСТЫЙ ТЕКСТ.
+        Любые элементы форматирования сломают отображение!
+
+        ЖЁСТКИЕ ПРАВИЛА:
+        1. НИКАКОЙ РАЗМЕТКИ — ни Markdown, ни HTML
+        2. НИКАКИХ СТРОК КОДА, ТАБЛИЦ
+        3. Списки делай только через цифры с точкой (1. 2. 3.)
+        4. Не используй **жирный**, *курсив*, `код`, ## заголовки
+        5. Даже не пытайся \"украсить\" ответ — это сломает приложение
+
+        Примеры ЗАПРЕЩЁННОГО форматирования:
+        **Это жирный текст** — ПЛОХО
+        *Это курсив* — ПЛОХО
+        # Заголовок — ПЛОХО
+
+        Примеры РАЗРЕШЁННОГО форматирования:
+        Это обычный текст. — ХОРОШО
+        1. Первый пункт. — ХОРОШО
+        2. Второй пункт. — ХОРОШО
+
+        Нарушение этих правил сделает твои ответы бесполезными.
+    </string>
 </resources>

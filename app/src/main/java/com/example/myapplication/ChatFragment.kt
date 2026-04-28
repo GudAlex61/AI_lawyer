@@ -16,6 +16,7 @@ import androidx.lifecycle.Observer
 import java.io.ByteArrayOutputStream
 import java.util.Locale
 
+// сохранение состояния при повороте
 class ChatFragment : Fragment() {
 
     // activityViewModels() — ViewModel живёт пока жива Activity,
@@ -51,9 +52,7 @@ class ChatFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_chat, container, false)
     }
@@ -107,15 +106,61 @@ class ChatFragment : Fragment() {
         })
     }
 
-    private fun updateUIForCurrentChat() {
-        val chat = viewModel.getCurrentChat()
-        clearChatUI()
-        if (chat.messages.isNotEmpty()) {
-            welcomeContainer.visibility = View.GONE
-            chatContainer.visibility = View.VISIBLE
-            isFirstMessage = false
-            for (message in chat.messages) {
-                addMessageToUI(message)
+    private inner class ChatHistoryAdapter(
+        context: android.content.Context, private val chats: List<Chat>
+    ) : ArrayAdapter<Chat>(context, 0, chats) {
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val chat = chats[position]
+
+            val view = convertView ?: LayoutInflater.from(context)
+                .inflate(android.R.layout.simple_list_item_1, parent, false)
+
+            val textView = view.findViewById<TextView>(android.R.id.text1)
+
+            val background = GradientDrawable().apply {
+                cornerRadius = dpToPx(12).toFloat()
+                if (position == currentChatIndex) {
+                    setColor(ContextCompat.getColor(context, R.color.chat_history_selected_bg))
+                } else if (chat.isUnread()) {
+                    setColor(ContextCompat.getColor(context, R.color.chat_history_unread_bg))
+                } else {
+                    setColor(ContextCompat.getColor(context, R.color.chat_history_default_bg))
+                }
+                setStroke(dpToPx(1), ContextCompat.getColor(context, R.color.chat_history_border))
+            }
+
+            textView.apply {
+                val title = chat.getTitle()
+                val time = chat.getLastMessageTime()
+//                val preview = chat.getShortPreview()
+
+                text = if (chat.messages.isEmpty()) {
+                    context.getString(R.string.empty_chat_title)
+                } else {
+                    "$title $time"
+                }
+
+                this.background = background
+                setPadding(dpToPx(16), dpToPx(12), dpToPx(16), dpToPx(12))
+                textSize = 18f
+                maxLines = 5
+                gravity = Gravity.START
+                isSingleLine = false
+
+                if (position == currentChatIndex) {
+                    setTextColor(ContextCompat.getColor(context, R.color.current_chat_title))
+                    setTypeface(null, Typeface.BOLD)
+                } else if (chat.isUnread()) {
+                    setTextColor(ContextCompat.getColor(context, R.color.unread_chat_title))
+                    setTypeface(null, Typeface.BOLD)
+                } else {
+                    setTextColor(ContextCompat.getColor(context, R.color.chat_title))
+                    setTypeface(null, Typeface.NORMAL)
+                }
+
+
+                minimumHeight = dpToPx(80)
             }
         } else {
             welcomeContainer.visibility = View.VISIBLE
@@ -129,8 +174,7 @@ class ChatFragment : Fragment() {
 
         scrollView = ScrollView(requireContext()).apply {
             layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT
             )
             isVerticalScrollBarEnabled = true
             overScrollMode = View.OVER_SCROLL_NEVER
@@ -139,8 +183,7 @@ class ChatFragment : Fragment() {
         messagesContainer = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
             )
             setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16))
         }
@@ -155,9 +198,7 @@ class ChatFragment : Fragment() {
 
     private fun dpToPx(dp: Int): Int {
         return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dp.toFloat(),
-            resources.displayMetrics
+            TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(), resources.displayMetrics
         ).toInt()
     }
 
@@ -228,6 +269,15 @@ class ChatFragment : Fragment() {
             attachmentPreviewContainer.visibility = View.GONE
             attachmentName.text = ""
             attachmentIcon.text = "📎"
+    private fun createNewChat() {
+        val currentMessages = getCurrentMessages()
+        if (currentMessages.isEmpty()) {
+            Toast.makeText(
+                requireContext(),
+                context?.getString(R.string.error_current_chat_empty),
+                Toast.LENGTH_SHORT
+            ).show()
+            return
         }
     }
 
@@ -315,8 +365,7 @@ class ChatFragment : Fragment() {
         val messageLayout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply {
                 topMargin = dpToPx(8)
                 bottomMargin = dpToPx(8)
@@ -348,15 +397,14 @@ class ChatFragment : Fragment() {
         val timeText = TextView(requireContext()).apply {
             text = message.time
             textSize = 10f
-            setTextColor(0xFF9CA3AF.toInt())
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.message_time_text))
             setPadding(dpToPx(8), dpToPx(2), dpToPx(8), dpToPx(2))
         }
 
         val textContainer = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
             )
         }
 
@@ -373,12 +421,11 @@ class ChatFragment : Fragment() {
         } else {
             messageLayout.gravity = Gravity.START
             val botIcon = TextView(requireContext()).apply {
-                text = "🤖"
+                text = context?.getString(R.string.ai_bot_emoji)
                 textSize = 24f
                 setPadding(0, dpToPx(4), dpToPx(8), 0)
                 layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
                 )
             }
             messageLayout.addView(botIcon)
@@ -441,6 +488,72 @@ class ChatFragment : Fragment() {
             shape = GradientDrawable.RECTANGLE
             cornerRadius = radiusPx.toFloat()
             setColor(color)
+    private fun getAIResponse(userMessage: String) {
+        sendButton.text = "⌛"
+        sendButton.isEnabled = false
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val json = JSONObject().apply {
+                    put("model", "openai/gpt-3.5-turbo")
+                    put("max_tokens", 500)
+
+                    val messagesArray = JSONArray().apply {
+
+                        put(JSONObject().apply {
+                            put("role", "system")
+                            put(
+                                "content",
+                                context?.getString(R.string.ai_system_prompt)?.trimIndent()
+                            )
+                        })
+                        put(JSONObject().apply {
+                            put("role", "user")
+                            put("content", userMessage)
+                        })
+                    }
+                    put("messages", messagesArray)
+                }
+
+                // БЕЗОПАСНОЕ ИСПОЛЬЗОВАНИЕ API КЛЮЧА
+                val apiKey = BuildConfig.OPENROUTER_API_KEY
+
+                val request = Request.Builder().url("https://openrouter.ai/api/v1/chat/completions")
+                    .addHeader("Authorization", "Bearer $apiKey")
+                    .addHeader("Content-Type", "application/json")
+                    .post(json.toString().toRequestBody("application/json".toMediaType())).build()
+
+                val client =
+                    OkHttpClient.Builder().connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                        .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS).build()
+
+                val response = client.newCall(request).execute()
+
+                if (response.isSuccessful) {
+                    val responseBody = response.body?.string()
+                    val aiResponse = parseAIResponse(responseBody)
+
+                    withContext(Dispatchers.Main) {
+                        addMessage(aiResponse, false)
+                        resetSendButton()
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        addMessage(
+                            context?.getString(R.string.error_api_code, response.code)
+                                ?: "API Error", false
+                        )
+                        resetSendButton()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    addMessage(
+                        context?.getString(R.string.error_connection) ?: "Connection Error", false
+                    )
+                    resetSendButton()
+                }
+            }
         }
     }
 
@@ -463,5 +576,19 @@ class ChatFragment : Fragment() {
 
     companion object {
         private const val MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024
+    private fun parseAIResponse(responseBody: String?): String {
+        return try {
+            val json = JSONObject(responseBody ?: "")
+            val choices = json.getJSONArray("choices")
+            if (choices.length() > 0) {
+                val firstChoice = choices.getJSONObject(0)
+                val message = firstChoice.getJSONObject("message")
+                message.getString("content").trim()
+            } else {
+                context?.getString(R.string.error_no_ai_response) ?: "No response"
+            }
+        } catch (e: Exception) {
+            context?.getString(R.string.error_parsing_response) ?: "Parsing error"
+        }
     }
 }
