@@ -11,14 +11,16 @@ import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import java.io.ByteArrayOutputStream
 import java.util.Locale
 
 class ChatFragment : Fragment() {
 
-    private val viewModel: ChatViewModel by viewModels()
+    // activityViewModels() — ViewModel живёт пока жива Activity,
+    // а не фрагмент, поэтому история не теряется при смене вкладок
+    private val viewModel: ChatViewModel by activityViewModels()
 
     private lateinit var messagesContainer: LinearLayout
     private lateinit var scrollView: ScrollView

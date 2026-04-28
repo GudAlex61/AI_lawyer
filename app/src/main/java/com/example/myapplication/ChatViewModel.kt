@@ -57,7 +57,6 @@ class ChatViewModel : ViewModel() {
 
     fun sendMessage(text: String, isUser: Boolean) {
         addMessage(Message(text = text, isUser = isUser))
-
         if (isUser) {
             getAIResponse(text)
         }
@@ -105,7 +104,7 @@ class ChatViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val payload = buildTextPayload(userMessage)
-                val aiResponse = executeOpenRouterRequest(payload)
+                val aiResponse = executeOpenRouterRequestWithRetry(payload)
 
                 withContext(Dispatchers.Main) {
                     addMessage(Message(text = aiResponse, isUser = false))
@@ -113,7 +112,7 @@ class ChatViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    addMessage(Message(text = "Ошибка соединения: ${e.message ?: "неизвестная ошибка"}", isUser = false))
+                    addMessage(Message(text = friendlyErrorMessage(e), isUser = false))
                     _isLoading.value = false
                 }
             }
@@ -132,7 +131,7 @@ class ChatViewModel : ViewModel() {
                     else -> throw IllegalArgumentException("Поддерживаются только изображения, PDF и DOCX")
                 }
 
-                val aiResponse = executeOpenRouterRequest(payload)
+                val aiResponse = executeOpenRouterRequestWithRetry(payload)
 
                 withContext(Dispatchers.Main) {
                     addMessage(Message(text = aiResponse, isUser = false))
@@ -140,11 +139,44 @@ class ChatViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    addMessage(Message(text = "Не удалось обработать файл: ${e.message ?: "неизвестная ошибка"}", isUser = false))
+                    addMessage(Message(text = "Не удалось обработать файл: ${friendlyErrorMessage(e)}", isUser = false))
                     _isLoading.value = false
                 }
             }
         }
+    }
+
+    /**
+     * Выполняет запрос с повторными попытками при ошибках 429 (rate limit) и 504 (таймаут).
+     * Стратегия: до 3 попыток с экспоненциальной задержкой 2с → 4с → 8с.
+     */
+    private suspend fun executeOpenRouterRequestWithRetry(
+        payload: JSONObject,
+        maxAttempts: Int = 1
+    ): String {
+        var lastException: Exception? = null
+
+        for (attempt in 1..maxAttempts) {
+            try {
+                return executeOpenRouterRequest(payload)
+            } catch (e: RateLimitException) {
+                lastException = e
+                if (attempt < maxAttempts) {
+                    // Экспоненциальная задержка: 2с, 4с, 8с
+                    val delayMs = (2000L * (1 shl (attempt - 1)))
+                    delay(delayMs)
+                }
+            } catch (e: GatewayTimeoutException) {
+                lastException = e
+                if (attempt < maxAttempts) {
+                    val delayMs = (3000L * (1 shl (attempt - 1)))
+                    delay(delayMs)
+                }
+            }
+            // Остальные исключения бросаем сразу без retry
+        }
+
+        throw lastException ?: IllegalStateException("Неизвестная ошибка после $maxAttempts попыток")
     }
 
     private fun buildTextPayload(userMessage: String): JSONObject {
@@ -284,6 +316,14 @@ class ChatViewModel : ViewModel() {
 
         client.newCall(request).execute().use { response ->
             val responseBody = response.body?.string()
+
+            // Выбрасываем специализированные исключения для retry-логики
+            if (response.code == 429) {
+                throw RateLimitException("Превышен лимит запросов (429): ${responseBody?.take(200) ?: ""}")
+            }
+            if (response.code == 504) {
+                throw GatewayTimeoutException("Сервер не ответил вовремя (504): ${responseBody?.take(200) ?: ""}")
+            }
             if (!response.isSuccessful) {
                 throw IllegalStateException("OpenRouter API вернул ${response.code}: ${responseBody?.take(250) ?: "пустой ответ"}")
             }
@@ -308,6 +348,19 @@ class ChatViewModel : ViewModel() {
             }
         } catch (e: Exception) {
             "Ошибка обработки ответа"
+        }
+    }
+
+    /**
+     * Переводит техническое исключение в понятное пользователю сообщение.
+     */
+    private fun friendlyErrorMessage(e: Exception): String {
+        return when (e) {
+            is RateLimitException ->
+                "Сервис временно перегружен. Попробуйте через несколько секунд."
+            is GatewayTimeoutException ->
+                "Сервер не успел ответить. Попробуйте повторить запрос — обычно помогает с 1–2 попытки."
+            else -> e.message ?: "Неизвестная ошибка"
         }
     }
 
@@ -672,6 +725,10 @@ class ChatViewModel : ViewModel() {
         }
         return result.toString()
     }
+
+    // Специализированные исключения для retry-логики
+    class RateLimitException(message: String) : Exception(message)
+    class GatewayTimeoutException(message: String) : Exception(message)
 
     private data class UploadedS3Object(val key: String, val presignedUrl: String)
 

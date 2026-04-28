@@ -95,7 +95,7 @@ android {
                 getLocalProperty(
                     project,
                     "OPENROUTER_MODEL",
-                    "google/gemini-2.0-flash-001"
+                    "openai/gpt-4o-mini"
                 )
             )
         )
@@ -107,7 +107,7 @@ android {
                 getLocalProperty(
                     project,
                     "OPENROUTER_VISION_MODEL",
-                    "google/gemini-2.0-flash-001"
+                    "google/gemini-flash-1.5"
                 )
             )
         )
